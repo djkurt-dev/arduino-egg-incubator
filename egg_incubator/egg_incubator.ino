@@ -29,6 +29,7 @@ float minHumidity=55.00;
 float maxHumidity=60.00;
 int minTempReached = 0;
 int maxHumReached = 0;
+int ventOpen = 1;
 int count = 0;
 int chk;
 float hum, temp, tempf, uptime;
@@ -69,14 +70,25 @@ void setup() {
   lcd.print("RESERVED");
   delay(2000);
   lcd.clear();
+  
+  for (pos = 180; pos >= 0; pos -= 1) { 
+      if(pos == 0){ // done closing
+        ventOpen = 0; // closed 
+        break;
+      }
+      
+      myservo.write(pos);              
+      delay(15);                       
+    }
 }
+
+
 
 void loop() {
   hum = dht.readHumidity();
   temp = dht.readTemperature();
   unsigned long t1 = millis();
 
-  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Temp:  ");
   lcd.print(temp);
@@ -92,32 +104,58 @@ void loop() {
   }
 
   if(minTempReached == 1){
-    digitalWrite(RelayBulb, LOW);    
+    digitalWrite(RelayBulb, LOW);   
+
+    if(hum >= maxHumidity){
+      digitalWrite(RelayFan, HIGH);          
+    } else{
+      digitalWrite(RelayFan, LOW);          
+    }
+    
   } else {
-    digitalWrite(RelayBulb, HIGH);    
+    digitalWrite(RelayBulb, HIGH);   
+    
+    if(hum >= maxHumidity){
+      digitalWrite(RelayFan, HIGH);          
+    } else{
+      digitalWrite(RelayFan, LOW);          
+    }
   }
 
   if(hum <= minHumidity){
     maxHumReached = 0;
+
+    if(ventOpen == 1){
+      for (pos = 180; pos >= 0; pos -= 1) { 
+    
+        if(pos == 0){ // done closing
+          ventOpen = 0; // closed 
+          break;
+        }
+        
+        myservo.write(pos);              
+        delay(15);                       
+      }      
+    }
+    
   } 
+  
   if(hum >= maxHumidity){
     maxHumReached = 1;
-  } 
-
-  if(maxHumReached == 1 || hum >= minHumidity){
-    for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-      myservo.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(15);                       // waits 15ms for the servo to reach the position
+    
+    if(ventOpen == 0){
+      for (pos = 0; pos <= 180; pos += 1) { 
+        if(pos == 180){ // done opening
+          ventOpen = 1; // open 
+          break;
+        }
+        
+        myservo.write(pos);              
+        delay(15);                        
+      }      
     }
-    delay(2000)
+    
   } 
-  else{
-    for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees in steps of 1 degree
-      myservo.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(15);                       // waits 15ms for the servo to reach the position  
-    }
-    delay(2000)  
-  }
 
   uptime = t1 * 1e-3;
   unit = 's';
