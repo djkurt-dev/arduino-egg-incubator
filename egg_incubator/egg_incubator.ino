@@ -1,8 +1,6 @@
 #include <LiquidCrystal.h>
-#include <Wire.h>
 #include <Servo.h>
 #include <DHT.h>;
-// #include <DateTime.h>
 
 #define DHTPIN 11
 #define DHTTYPE DHT22
@@ -23,8 +21,8 @@ int RelayFan = 2;
 int lcd_key = 0;
 int adc_key_in = 0;
 int pos = 0;
-float minTemp = 35.00;
-float maxTemp = 37.00;
+float minTemp = 37.00;
+float maxTemp = 37.80;
 float minHumidity=55.00;
 float maxHumidity=60.00;
 int minTempReached = 0;
@@ -32,7 +30,7 @@ int maxHumReached = 0;
 int ventOpen = 1;
 int count = 0;
 int chk;
-float hum, temp, tempf, uptime;
+float hum, temp, uptime;
 char ch, unit;
 
 int read_LCD_buttons()
@@ -78,7 +76,7 @@ void setup() {
       }
       
       myservo.write(pos);              
-      delay(15);                       
+      delay(10);                       
     }
 }
 
@@ -104,22 +102,9 @@ void loop() {
   }
 
   if(minTempReached == 1){
-    digitalWrite(RelayBulb, LOW);   
-
-    if(hum >= maxHumidity){
-      digitalWrite(RelayFan, HIGH);          
-    } else{
-      digitalWrite(RelayFan, LOW);          
-    }
-    
+    digitalWrite(RelayBulb, LOW);     
   } else {
     digitalWrite(RelayBulb, HIGH);   
-    
-    if(hum >= maxHumidity){
-      digitalWrite(RelayFan, HIGH);          
-    } else{
-      digitalWrite(RelayFan, LOW);          
-    }
   }
 
   if(hum <= minHumidity){
@@ -134,7 +119,7 @@ void loop() {
         }
         
         myservo.write(pos);              
-        delay(15);                       
+        delay(10);                       
       }      
     }
     
@@ -151,7 +136,7 @@ void loop() {
         }
         
         myservo.write(pos);              
-        delay(15);                        
+        delay(10);                        
       }      
     }
     
@@ -180,11 +165,6 @@ void loop() {
       break;
     }
     case btnLEFT:{
-      // lcd.clear();
-      // lcd.setCursor(0, 0);
-      // lcd.print("Uptime:  ");
-      // lcd.setCursor(0, 1);
-      // lcd.print(String(d)+"d "+String(h)+"h "+String(m)+"m "+String(s)+"s");
       lcd.clear();
       lcd.print("Uptime:  ");
       lcd.print(uptime);
